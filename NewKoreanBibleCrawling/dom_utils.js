@@ -1,108 +1,130 @@
 window.BibleDOM = (() => {
-		function verseIdFromFootnoteId(footnote) {
+	function verseIdFromFootnoteId(footnote) {
 			const fid = (footnote?.getAttribute('id') || '');
 			const m = fid.match(/([1-3]?[A-Z]{2,3})\.(\d+)\.(\d+)/);
 			return m ? `${m[1]}.${m[2]}.${m[3]}` : null;
-		}
-	
-		function visibleLenOfRange(range) {
+	}
+
+	function visibleLenOfRange(range) {
 			const frag = range.cloneContents();
 			const tmp = document.createElement('div');
 			tmp.appendChild(frag);
 			return (tmp.textContent || '').length;
-		}
-	
-		function findMarkerByVerseId(verseId) {
-			// <span class="ft GEN.1.1">
-			// [class~="GEN.1.1"] 공백으로 분리된 다음과 같은 클래스를 찾는다
-			const esc = CSS.escape(verseId);
-			return document.querySelector(`span.ft[class~="${esc}"]`);
-		}
-	
-		function findTextContainer(marker) {
-			// 본문 블록(단락/인용) 우선
-			return (
-				marker.closest('.p, .m, .q1') ||
-				marker.closest('[class*="p"], [class*="m"], [class*="q"]') ||
-				marker.parentElement
-			);
-		}
-	
-		function getVerseTextSpansWithin(container, verseId) {
-			// 컨테이너 내부에서 해당 절의 본문 텍스트 span들을 찾는다
-			// (.v) span 제외 (verse num)
-			const spans = Array.from(container.querySelectorAll(`.verse-span[data-verse-id="${CSS.escape(verseId)}"]`))
-				.filter(s => !s.querySelector('.v'));
-			return spans;
-		}
-	
-		function getCharOffsetBeforeFootnote(footnoteEl) {
-			if (!footnoteEl) return 0;
-	
+	}
+
+	function getFootnoteIndexInVerse(footnoteEl) {
+			const footnoteId = footnoteEl?.getAttribute('id') || '';
 			const verseId = verseIdFromFootnoteId(footnoteEl);
 			if (!verseId) return 0;
-	
-			const marker = findMarkerByVerseId(verseId);
-			if (!marker) return 0;
-	
-			const container = findTextContainer(marker);
-			if (!container) return 0;
-	
-			const spans = getVerseTextSpansWithin(container, verseId);
-			if (!spans.length) return 0;
-	
-			// - marker는 보통 container 안의 어떤 위치에 존재합니다. spans의 내용을 앞에서부터 누적하다가 각주 앞에서 끊고 본문 전체를 리턴합니다.
-	
-			let count = 0;
-	
-			for (const s of spans) {
-				// marker가 이 span 안에 있으면 그 span에서 marker 직전까지만 잰다
-				if (s.contains(marker)) {
-					const r = document.createRange();
-					r.selectNodeContents(s);
-					r.setEndBefore(marker);
-					count += visibleLenOfRange(r);
-					return count;
-				}
-	
-				// marker가 span 밖인데, marker가 span중간에 끼는 구조(예: span 다음에 marker가 독립 노드로 존재)일 수 있음
-				// marker가 span 뒤에 나오기 전까지의 span은 전부 더함.
-				// marker가 span 앞에 나오면(즉, marker가 더 앞이면) 여기까지 더하면 안 되므로 문서 순서를 비교한다.
-				const pos = s.compareDocumentPosition(marker);
-				const spanAfterMarker = !!(pos & Node.DOCUMENT_POSITION_PRECEDING); // s가 marker보다 뒤에 있음
-				if (spanAfterMarker) {
-					// marker가 이미 앞에 있음 -> 더하면 안 됨
-					return count;
-				}
-	
-				count += (s.innerText || s.textContent || '').length;
-			}
-	
-			// spans를 다 돌았는데도 marker를 못 만났다면
-			// marker가 container 안이지만 verse spans와 분리되어 있을 수 있음 → 지금까지 누적한 값 반환
-			return count;
-		}
-	
-		function debugFootnote(footnoteEl) {
+
+			const allFootnotesInVerse = Array.from(
+					document.querySelectorAll(`[class*="ftext hidden"][id*="${CSS.escape(verseId)}"]`)
+			);
+
+			const index = allFootnotesInVerse.indexOf(footnoteEl);
+			return index >= 0 ? index : 0;
+	}
+
+	function findNthMarkerByVerseId(verseId, index) {
+			const esc = CSS.escape(verseId);
+			const markers = Array.from(
+					document.querySelectorAll(`span.ft[class~="${esc}"]`)
+			);
+			return markers[index] || markers[0] || null;
+	}
+
+	// 수정: 마커가 속한 모든 관련 컨테이너가 아닌, 
+	// 같은 절의 모든 verse-span을 문서 순서대로 가져오기
+	function getAllVerseTextSpans(verseId) {
+			// 해당 절의 모든 verse-span 찾기 (절 번호 제외)
+			const spans = Array.from(
+					document.querySelectorAll(`.verse-span[data-verse-id="${CSS.escape(verseId)}"]`)
+			).filter(s => !s.querySelector('.v'));
+			
+			return spans;
+	}
+
+	function getCharOffsetBeforeFootnote(footnoteEl) {
+			if (!footnoteEl) return 0;
+
 			const verseId = verseIdFromFootnoteId(footnoteEl);
-			const marker = verseId ? findMarkerByVerseId(verseId) : null;
-			const container = marker ? findTextContainer(marker) : null;
-			const spans = (container && verseId) ? getVerseTextSpansWithin(container, verseId) : [];
+			if (!verseId) return 0;
+
+			const footnoteIndex = getFootnoteIndexInVerse(footnoteEl);
+			const marker = findNthMarkerByVerseId(verseId, footnoteIndex);
+			if (!marker) return 0;
+
+			// 수정: 해당 절의 모든 verse-span을 가져옴
+			const spans = getAllVerseTextSpans(verseId);
+			if (!spans.length) return 0;
+
+			let count = 0;
+
+			for (const s of spans) {
+					// 마커가 span 안에 있는 경우
+					if (s.contains(marker)) {
+							const r = document.createRange();
+							r.selectNodeContents(s);
+							r.setEndBefore(marker);
+							count += visibleLenOfRange(r);
+							return count;
+					}
+
+					// 마커가 span의 형제 요소인 경우도 체크
+					// span과 marker의 부모가 같고, marker가 span 바로 다음에 오는 경우
+					if (s.parentElement === marker.parentElement) {
+							const siblings = Array.from(s.parentElement.children);
+							const spanIdx = siblings.indexOf(s);
+							const markerIdx = siblings.indexOf(marker);
+							
+							if (markerIdx >= 0 && spanIdx < markerIdx) {
+									// 마커가 이 span 뒤에 형제로 존재
+									// 이 span의 모든 텍스트를 더하고 계속
+									count += (s.innerText || s.textContent || '').length;
+									continue;
+							} else if (markerIdx >= 0 && spanIdx === markerIdx - 1) {
+									// 마커가 바로 다음 형제
+									count += (s.innerText || s.textContent || '').length;
+									return count;
+							}
+					}
+
+					// 문서 순서 비교
+					const pos = s.compareDocumentPosition(marker);
+					const spanAfterMarker = !!(pos & Node.DOCUMENT_POSITION_PRECEDING);
+					
+					if (spanAfterMarker) {
+							// 이 span이 마커보다 뒤에 있으면 중단
+							return count;
+					}
+
+					// 마커가 span 뒤에 있으면 전체 텍스트 누적
+					count += (s.innerText || s.textContent || '').length;
+			}
+
+			return count;
+	}
+
+	function debugFootnote(footnoteEl) {
+			const verseId = verseIdFromFootnoteId(footnoteEl);
+			const footnoteIndex = getFootnoteIndexInVerse(footnoteEl);
+			const marker = verseId ? findNthMarkerByVerseId(verseId, footnoteIndex) : null;
+			const spans = verseId ? getAllVerseTextSpans(verseId) : [];
+			
 			return {
-				footnote_id: footnoteEl?.getAttribute('id') || null,
-				verseId,
-				marker_found: !!marker,
-				marker_class: marker?.getAttribute('class') || null,
-				container_tag: container?.tagName || null,
-				container_class: container?.getAttribute('class') || null,
-				spans_len: spans.length,
-				marker_in_container: container ? container.contains(marker) : false
+					footnote_id: footnoteEl?.getAttribute('id') || null,
+					verseId,
+					footnote_index: footnoteIndex,
+					marker_found: !!marker,
+					marker_class: marker?.getAttribute('class') || null,
+					marker_parent: marker?.parentElement?.tagName || null,
+					spans_len: spans.length,
+					spans_text: spans.map(s => (s.textContent || '').substring(0, 30))
 			};
-		}
-	
-		return {
+	}
+
+	return {
 			getCharOffsetBeforeFootnote,
 			debugFootnote
-		};
-	})();
-	
+	};
+})();

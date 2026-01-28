@@ -1,0 +1,92 @@
+{
+  "c": {
+    "location": null,
+    "tag": "h2",
+    "sample": "창세기 1"
+  },
+  "s": {
+    "location": null,
+    "tag": "p",
+    "sample": "하나님이 온 누리를 지으시다"
+  },
+  "p": {
+    "location": "GEN.1.1",
+    "tag": "p",
+    "sample": "1⁕처음에 하나님이 하늘과 땅을 창조하셨다. 2땅은 거칠고 비어 있었다. 어둠이 깊은 물 위에 깔려 있었다. 그리고 ⁕하나님의 영이 물 위..."
+  },
+  "verse-span": {
+    "location": "GEN.1.1",
+    "tag": "span",
+    "sample": "1"
+  },
+  "v": {
+    "location": "GEN.1.1",
+    "tag": "span",
+    "sample": "1"
+  },
+  "ft": {
+    "location": null,
+    "tag": "span",
+    "sample": "⁕"
+  },
+  "ftext": {
+    "location": null,
+    "tag": "span",
+    "sample": ""
+  },
+  "hidden": {
+    "location": null,
+    "tag": "span",
+    "sample": ""
+  },
+  "f": {
+    "location": "GEN.1.1",
+    "tag": "span",
+    "sample": ""
+  },
+  "fr": {
+    "location": "GEN.1.1",
+    "tag": "span",
+    "sample": ""
+  },
+  "q1": {
+    "location": "GEN.2.23",
+    "tag": "p",
+    "sample": "“이는 드디어 내 뼈 중의 뼈, 내 살 중의 살이로구나!"
+  },
+  "m": {
+    "location": "GEN.2.24",
+    "tag": "p",
+    "sample": "24⁕이런 까닭에 남편 될 사람이 자기 아버지와 자기 어머니를 떠나 자기 아내 될 사람과 어우러져서 살게 될 것이다. 그 둘이 하나의 몸이..."
+  },
+  "r": {
+    "location": null,
+    "tag": "p",
+    "sample": "(대상 1:1-4; 눅 3:36-38)"
+  },
+  "nb": {
+    "location": "1SA.4.1",
+    "tag": "p",
+    "sample": "1사무엘의 말이 온 이스라엘에 알려졌다."
+  },
+  "sp": {
+    "location": null,
+    "tag": "p",
+    "sample": "“(혼잣말)"
+  },
+  "ms": {
+    "location": null,
+    "tag": "p",
+    "sample": "욥과 친구들의 첫 번째 대화"
+  },
+  "mr": {
+    "location": null,
+    "tag": "p",
+    "sample": "(4:1-14:22)"
+  },
+  "d": {
+    "location": "PSA.3.1",
+    "tag": "p",
+    "sample": "1⁕노랫말(시). 다윗에게 속한 것. 다윗이 그의 아들 압살롬을 피해 달아날 때."
+  }
+}

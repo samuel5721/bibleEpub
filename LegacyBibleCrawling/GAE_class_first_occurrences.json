@@ -1,0 +1,42 @@
+{
+  "chapNum": {
+    "location": "GEN, 1",
+    "tag": "font",
+    "sample": "제 1 장"
+  },
+  "smallTitle": {
+    "location": "GEN, 1",
+    "tag": "font",
+    "sample": "천지 창조"
+  },
+  "number": {
+    "location": "GEN, 1",
+    "tag": "span",
+    "sample": "1"
+  },
+  "comment": {
+    "location": "GEN, 1",
+    "tag": "a",
+    "sample": "1)"
+  },
+  "D2": {
+    "location": "GEN, 1",
+    "tag": "div",
+    "sample": ""
+  },
+  "area": {
+    "location": "GEN, 1",
+    "tag": "font",
+    "sample": ""
+  },
+  "orgin": {
+    "location": "GEN, 2",
+    "tag": "font",
+    "sample": "베델리엄"
+  },
+  "name": {
+    "location": "GEN, 2",
+    "tag": "font",
+    "sample": "아담"
+  }
+}
